@@ -4,12 +4,12 @@ import pandas as pd
 import glob
 import os
 import re
+from pathlib import Path
 from datetime import datetime
-from bs4 import BeautifulSoup # Ensure this is imported if not already in global scope or handled inside method
+from bs4 import BeautifulSoup 
 from src.scraper.naver_shopping_scraper import NaverShoppingScraper
-from src.extractor.keyword_analyzer import KeywordAnalyzer
-
-
+from src.analyzer.keyword_analyzer import KeywordAnalyzer
+import config
 
 from playwright.async_api import async_playwright
 
@@ -140,7 +140,7 @@ async def main():
     
     if products:
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        result_filename = f"results_{timestamp}.csv"
+        result_filename = config.RAW_DATA_DIR / f"results_{timestamp}.csv"
         
         # 상품 리스트 데이터 구성
         data = []
@@ -179,13 +179,21 @@ async def main():
     # Better to match the result filename if possible, but simpler to just generate new one or extract from filename
     # Let's extract from result_filename to keep them paired: results_2025... -> keyword_report_2025...
     
+    
     report_filename = "keyword_report.csv" # default fallback
-    if result_filename.startswith("results_"):
-        report_filename = result_filename.replace("results_", "keyword_report_")
+    
+    # We work with Path objects now
+    result_path_obj = result_filename if isinstance(result_filename, Path) else Path(result_filename)
+    base_name = result_path_obj.name
+    
+    if base_name.startswith("results_"):
+        report_base = base_name.replace("results_", "keyword_report_")
     else:
-        report_filename = f"keyword_report_{timestamp}.csv"
+        report_base = f"keyword_report_{timestamp}.csv"
+        
+    report_filename = config.REPORTS_DIR / report_base
 
-    report_path = analyzer.analyze_file(result_filename, output_path=report_filename)
+    report_path = analyzer.analyze_file(str(result_filename), output_path=str(report_filename))
     
     if report_path:
         print(f"[Step 2 완료] 분석 리포트: {report_path}")
@@ -194,13 +202,15 @@ async def main():
         # Step 3: Tag Analysis
         # -------------------------------------------------------------
         print("\n[Step 3 시작] 태그 분석 중...")
-        tag_report_filename = "tag_report.csv"
-        if result_filename.startswith("results_"):
-             tag_report_filename = result_filename.replace("results_", "tag_report_")
+        tag_report_base = "tag_report.csv"
+        if base_name.startswith("results_"):
+             tag_report_base = base_name.replace("results_", "tag_report_")
         else:
-             tag_report_filename = f"tag_report_{timestamp}.csv"
+             tag_report_base = f"tag_report_{timestamp}.csv"
+             
+        tag_report_filename = config.REPORTS_DIR / tag_report_base
         
-        tag_report_path = analyzer.analyze_tags(result_filename, output_path=tag_report_filename)
+        tag_report_path = analyzer.analyze_tags(str(result_filename), output_path=str(tag_report_filename))
         if tag_report_path:
              print(f"[Step 3 완료] 태그 리포트: {tag_report_path}")
         

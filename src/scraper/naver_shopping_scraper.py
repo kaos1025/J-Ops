@@ -17,12 +17,14 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+import config
+
 class NaverShoppingScraper:
     """
     네이버 쇼핑 검색 결과를 크롤링하는 클래스
     __NEXT_DATA__ JSON 직접 추출 방식 (Direct JSON Extraction)
     """
-    BASE_URL = "https://m.shopping.naver.com/search/all"
+    BASE_URL = config.URLS["NAVER_SHOPPING_MOBILE"]
 
     def __init__(self, headless: bool = False):
         self.headless = headless
@@ -36,19 +38,19 @@ class NaverShoppingScraper:
         results: List[Product] = []
 
         async with async_playwright() as p:
-            # 1. Device Emulation (iPhone 13 Pro)
-            iphone_13 = p.devices['iPhone 13 Pro']
+            # 1. Device Emulation
+            iphone_13 = p.devices[config.BROWSER_CONFIG["DEVICE"]]
             
             browser = await p.chromium.launch(
                 headless=self.headless, 
                 slow_mo=1000,
-                args=["--disable-blink-features=AutomationControlled"]
+                args=config.BROWSER_CONFIG["ARGS"]
             )
             
             context = await browser.new_context(
                 **iphone_13,
-                locale='ko-KR',
-                timezone_id='Asia/Seoul'
+                locale=config.BROWSER_CONFIG["LOCALE"],
+                timezone_id=config.BROWSER_CONFIG["TIMEZONE"]
             )
             
             # Stealth: navigator.webdriver 숨기기
@@ -62,16 +64,13 @@ class NaverShoppingScraper:
 
             try:
                 # Random Delay
-                delay = random.uniform(1, 3)
+                delay = random.uniform(config.DELAYS["MIN_REQUEST"], config.DELAYS["MAX_REQUEST"])
                 logger.info(f"요청 전 {delay:.2f}초 대기...")
                 await asyncio.sleep(delay)
 
                 # URL Load
                 url = f"{self.BASE_URL}?query={keyword}&productSet=total"
-                await page.set_extra_http_headers({
-                    "Referer": "https://m.naver.com/",
-                    "Accept-Language": "ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7"
-                })
+                await page.set_extra_http_headers(config.HEADERS)
                 
                 await page.goto(url, wait_until='domcontentloaded')
                 
@@ -89,7 +88,8 @@ class NaverShoppingScraper:
 
                 # Scroll for lazy loading (though __NEXT_DATA__ usually has initial batch)
                 logger.info("스크롤 다운 실행...")
-                for _ in range(3):
+                scroll_count = config.SETTINGS.get("SCROLL_COUNT", 3)
+                for _ in range(scroll_count):
                     await page.keyboard.press("End")
                     await asyncio.sleep(2)
 
@@ -103,7 +103,8 @@ class NaverShoppingScraper:
                 soup = BeautifulSoup(html_source, 'html.parser')
 
                 # 2. Find __NEXT_DATA__ script
-                script_tag = soup.find("script", {"id": "__NEXT_DATA__", "type": "application/json"})
+                script_conf = config.SELECTORS["NEXT_DATA_SCRIPT"]
+                script_tag = soup.find("script", {"id": script_conf["id"], "type": script_conf["type"]})
                 
                 if script_tag:
                     try:
@@ -134,8 +135,9 @@ class NaverShoppingScraper:
                         logger.info(f"JSON 데이터 확인: {len(product_list)}개 아이템 발견")
 
                         count = 0
+                        max_items = config.SETTINGS.get("MAX_ITEMS", 20)
                         for item in product_list:
-                            if count >= 20:
+                            if count >= max_items:
                                 break
                             
                             # 'item' key inside the list element usually holds the core data

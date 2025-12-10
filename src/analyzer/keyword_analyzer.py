@@ -3,6 +3,7 @@ from kiwipiepy import Kiwi
 from collections import Counter
 from typing import List, Dict, Set
 import os
+import config
 
 class KeywordAnalyzer:
     """
@@ -19,7 +20,9 @@ class KeywordAnalyzer:
             '추천', '인기', '공식', '정품', '세트', '1+1', '2+1'
         }
 
-    def analyze_file(self, csv_path: str, output_path: str = "keyword_report.csv") -> str:
+    def analyze_file(self, csv_path: str, output_path: str = None) -> str:
+        if output_path is None:
+            output_path = str(config.REPORTS_DIR / "keyword_report.csv")
         """
         CSV 파일을 읽어서 키워드 분석을 수행하고 보고서를 저장함.
         Returns: 저장된 보고서 파일 경로
@@ -94,7 +97,9 @@ class KeywordAnalyzer:
         else:
             print(f"Tag report NOT found at: {report_path}")
 
-    def analyze_tags(self, csv_path: str, output_path: str = "tag_report.csv") -> str:
+    def analyze_tags(self, csv_path: str, output_path: str = None) -> str:
+        if output_path is None:
+            output_path = str(config.REPORTS_DIR / "tag_report.csv")
         """
         '판매자_설정_태그' 컬럼을 분석하여 태그 빈도 리포트를 생성함.
         """
