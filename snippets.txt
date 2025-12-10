@@ -1,0 +1,32 @@
+Found 110 occurrences
+
+Match 1:
+key&quot;:&quot;price&quot;,&quot;value&quot;:&quot;34930&quot;},{&quot;key&quot;:&quot;exhibition_category&quot;,&quot;value&quot;:&quot;바지&quot;},{&
+
+Match 2:
+key&quot;:&quot;price&quot;,&quot;value&quot;:&quot;34930&quot;},{&quot;key&quot;:&quot;brand_seq&quot;,&quot;value&quot;:&quot;20216&quot;}]" data-sh
+
+Match 3:
+key&quot;:&quot;price&quot;,&quot;value&quot;:&quot;22300&quot;},{&quot;key&quot;:&quot;exhibition_category&quot;,&quot;value&quot;:&quot;바지&quot;},{&
+
+Match 4:
+key&quot;:&quot;price&quot;,&quot;value&quot;:&quot;22300&quot;},{&quot;key&quot;:&quot;brand_seq&quot;,&quot;value&quot;:&quot;20216&quot;}]" data-sh
+
+Match 5:
+key&quot;:&quot;price&quot;,&quot;value&quot;:&quot;49900&quot;},{&quot;key&quot;:&quot;brand_seq&quot;,&quot;value&quot;:&quot;239605&quot;},{&quot;k
+
+Match 6:
+key&quot;:&quot;price&quot;,&quot;value&quot;:&quot;49900&quot;},{&quot;key&quot;:&quot;brand_seq&quot;,&quot;value&quot;:&quot;239605&quot;},{&quot;k
+
+Match 7:
+key&quot;:&quot;price&quot;,&quot;value&quot;:&quot;17900&quot;},{&quot;key&quot;:&quot;brand_seq&quot;,&quot;value&quot;:&quot;0&quot;},{&quot;key&qu
+
+Match 8:
+key&quot;:&quot;price&quot;,&quot;value&quot;:&quot;17900&quot;},{&quot;key&quot;:&quot;brand_seq&quot;,&quot;value&quot;:&quot;0&quot;},{&quot;key&qu
+
+Match 9:
+key&quot;:&quot;price&quot;,&quot;value&quot;:&quot;35900&quot;},{&quot;key&quot;:&quot;brand_seq&quot;,&quot;value&quot;:&quot;0&quot;},{&quot;key&qu
+
+Match 10:
+key&quot;:&quot;price&quot;,&quot;value&quot;:&quot;35900&quot;},{&quot;key&quot;:&quot;brand_seq&quot;,&quot;value&quot;:&quot;0&quot;},{&quot;key&qu
+

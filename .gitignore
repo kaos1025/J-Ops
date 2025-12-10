@@ -1,0 +1,21 @@
+# Environment variables
+.env
+__pycache__/
+*.pyc
+
+# Data folders (large files or user data)
+raw_images/
+processed_images/
+raw_clothes/
+base_model/
+fitted_images/
+raw_photos/
+result_photos/
+base_face.jpg
+
+# OS generated
+Thumbs.db
+.DS_Store
+
+# Brain
+.gemini/

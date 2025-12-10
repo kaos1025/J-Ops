@@ -1,0 +1,11 @@
+Found 110 occurrences
+
+Match 1 context:
+ta-shp-area-type="slot" data-shp-area-id="pd" data-shp-area-dtl="[{&quot;key&quot;:&quot;trtr&quot;,&quot;value&quot;:&quot;pla&quot;}]" data-shp-temp="[{&quot;key&quot;:&quot;requestId&quot;,&quot;value&quot;:&quot;jgTzVsqW6kgRPss++5o-295023&quot;}]" data-shp-contents-id="nad-a001-02-000000327040995" data-shp-contents-type="SA_prod" data-shp-contents-grp="ad" data-shp-contents-rank="1" data-shp-contents-dtl="[{&quot;key&quot;:&quot;nv_mid&quot;,&quot;value&quot;:&quot;28844099981&quot;},{&quot;key&quot;:&quot;price&quot;,&quot;value&quot;:&quot;34930&quot;},{&quot;key&quot;:&quot;exhibition_category&quot;,&quot;value&quot;:&quot;바지&quot;},{&quot;key&quot;:&quot;nfa_type&quot;,&quot;value&qu
+
+Match 2 context:
+age-key="100183655" data-shp-nsc="m.shopping.all" data-shp-inventory="prd_ext" data-shp-area="prd_ext.detail" data-shp-area-type="slot" data-shp-area-id="detail" data-shp-area-dtl="[{&quot;key&quot;:&quot;trtr&quot;,&quot;value&quot;:&quot;pla&quot;}]" data-shp-contents-id="28844099981" data-shp-contents-type="nv_mid" data-shp-contents-grp="prod" data-shp-contents-rank="1" data-shp-contents-dtl="[{&quot;key&quot;:&quot;prod_nm&quot;,&quot;value&quot;:&quot;STL 1+1 기모 하이웨스트팬츠 키작녀바지&quot;},{&quot;key&quot;:&quot;price&quot;,&quot;value&quot;:&quot;34930&quot;},{&quot;key&quot;:&quot;brand_seq&quot;,&quot;value&quot;:&quot;20216&quot;}]" data-shp-contents-provider-type="mall_seq" data-shp-conte
+
+Match 3 context:
+ta-shp-area-type="slot" data-shp-area-id="pd" data-shp-area-dtl="[{&quot;key&quot;:&quot;trtr&quot;,&quot;value&quot;:&quot;pla&quot;}]" data-shp-temp="[{&quot;key&quot;:&quot;requestId&quot;,&quot;value&quot;:&quot;jgTzVsqW6kgRPss++5o-295023&quot;}]" data-shp-contents-id="nad-a001-02-000000328612073" data-shp-contents-type="SA_prod" data-shp-contents-grp="ad" data-shp-contents-rank="2" data-shp-contents-dtl="[{&quot;key&quot;:&quot;nv_mid&quot;,&quot;value&quot;:&quot;37733588814&quot;},{&quot;key&quot;:&quot;price&quot;,&quot;value&quot;:&quot;22300&quot;},{&quot;key&quot;:&quot;exhibition_category&quot;,&quot;value&quot;:&quot;바지&quot;},{&quot;key&quot;:&quot;nfa_type&quot;,&quot;value&qu
+
