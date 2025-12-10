@@ -55,3 +55,9 @@ SETTINGS = {
     "SCROLL_COUNT": 3,
     "MAX_ITEMS": 20,
 }
+
+# AI Writer Config
+GENAI_CONFIG = {
+    "MODEL_NAME": "gemini-2.5-flash",
+    "API_KEY_ENV": "GOOGLE_API_KEY",
+}

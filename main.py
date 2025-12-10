@@ -9,100 +9,11 @@ from datetime import datetime
 from bs4 import BeautifulSoup 
 from src.scraper.naver_shopping_scraper import NaverShoppingScraper
 from src.analyzer.keyword_analyzer import KeywordAnalyzer
+from src.writer.ai_copywriter import AICopywriter
 import config
+import json
+from src.scraper.product_fetcher import ProductDataFetcher
 
-from playwright.async_api import async_playwright
-
-class ProductTitleFetcher:
-    """
-    URL에서 상품명을 추출하고 정제하는 클래스 (Mobile Playwright + iPhone 13 Pro)
-    """
-    @staticmethod
-    async def fetch_and_clean(url: str) -> str:
-        # 1. PC URL -> Mobile URL 변환 (속도 및 구조 단순화)
-        if "smartstore.naver.com" in url and "m.smartstore.naver.com" not in url:
-            url = url.replace("smartstore.naver.com", "m.smartstore.naver.com")
-            
-        print(f"URL에서 상품명 추출 중 (Mobile Playwright)... {url}")
-        title = ""
-        
-        try:
-            async with async_playwright() as p:
-                # 2. Device Emulation (Step 1 스크래퍼와 동일한 환경 구성)
-                iphone_13 = p.devices['iPhone 13 Pro']
-                
-                browser = await p.chromium.launch(
-                    headless=False, # 보안 우회를 위해 Headless=False 유지
-                    args=["--disable-blink-features=AutomationControlled"]
-                )
-                
-                context = await browser.new_context(
-                    **iphone_13,
-                    locale='ko-KR',
-                    timezone_id='Asia/Seoul'
-                )
-                
-                # Stealth: navigator.webdriver 숨기기
-                await context.add_init_script("""
-                    Object.defineProperty(navigator, 'webdriver', {
-                        get: () => undefined
-                    });
-                """)
-                
-                page = await context.new_page()
-
-                # 3. Resource Optimization (이미지, 폰트 차단으로 속도 향상)
-                await page.route("**/*", lambda route: route.abort() 
-                    if route.request.resource_type in ["image", "media", "font"] 
-                    else route.continue_()
-                )
-
-                try:
-                    await page.goto(url, wait_until="domcontentloaded", timeout=30000)
-                    
-                    # 4. Title Extraction
-                    # 우선순위 1: Open Graph Meta Tag (가장 깔끔함)
-                    og_title_loc = page.locator('meta[property="og:title"]')
-                    if await og_title_loc.count() > 0:
-                        title = await og_title_loc.first.get_attribute("content")
-                    
-                    # 우선순위 2: Page Title (Fallback)
-                    if not title:
-                        title = await page.title()
-
-                except Exception as e:
-                    print(f"페이지 로딩 실패 (제목만 가져옵니다): {e}")
-                finally:
-                    await browser.close()
-        except Exception as e:
-            print(f"브라우저 실행 실패: {e}")
-            return ""
-
-        if not title:
-            return ""
-
-        print(f"원천 상품명: {title}")
-        return ProductTitleFetcher.clean_title(title)
-
-    @staticmethod
-    def clean_title(title: str) -> str:
-        # 0. 접미사 정리 (타이틀 태그 등에서 붙는 잡다한 문구 제거)
-        # 예: "상품명 : 네이버 쇼핑", "상품명 : 쥴리씨"
-        title = re.sub(r' : 네이버.*', '', title)
-        title = re.sub(r' : \S+', '', title) # " : 쇼핑몰명" 패턴 제거 시도
-
-        # 1. 괄호 안의 내용 제거 (대괄호 [], 소괄호 ())
-        title = re.sub(r'\[.*?\]', '', title)
-        title = re.sub(r'\(.*?\)', '', title)
-        
-        # 2. 스마트스토어 등에서 붙는 접두사/접미사 추가 처리
-        title = title.replace("네이버쇼핑", "")
-
-        # 3. 불필요한 공백 정리
-        title = " ".join(title.split())
-        
-        print(f"정제된 키워드: {title}")
-        return title
 
 async def main():
     print("=== J-Ops SEO Sniper ===")
@@ -111,6 +22,7 @@ async def main():
     
     mode = input("모드를 선택하세요 (1/2): ").strip()
     keyword = ""
+    product_image_paths = []
 
     if mode == "1":
         keyword = input("분석할 키워드를 입력하세요: ").strip()
@@ -119,7 +31,33 @@ async def main():
         if not url.startswith("http"):
             print("올바른 URL을 입력해주세요.")
             return
-        keyword = await ProductTitleFetcher.fetch_and_clean(url)
+        fetcher = ProductDataFetcher()
+        info = await fetcher.fetch_product_info(url)
+        keyword = info["title"]
+        product_image_paths = info["image_paths"]
+        
+        # Select the first image for AI analysis
+        product_image_path = product_image_paths[0] if product_image_paths else None
+        
+        if info['title']:
+            print(f"[성공] 상품명: {keyword}", end="")
+            if product_image_paths:
+                print(f", 이미지 {len(product_image_paths)}장 저장 완료 (대표: {os.path.basename(product_image_path)})")
+            else:
+                print()
+                
+            # Mode 2 Refinement: Ask for "Target Keyword" separate from Product Title
+            print("-" * 30)
+            suggested_keyword = " ".join(keyword.split()[:2])
+            target_keyword = input(f"경쟁사를 분석할 '메인 키워드'를 입력하세요 (엔터 시 '{suggested_keyword}' 사용): ").strip()
+            
+            if not target_keyword:
+                target_keyword = suggested_keyword
+            
+            # Switch the 'keyword' variable to be the 'target_keyword' for the scraper
+            product_title = keyword # Backup original title
+            keyword = target_keyword # Use target keyword for scraping
+            print(f"👉 '{keyword}' 키워드로 경쟁사 분석을 시작합니다.")
     else:
         print("잘못된 입력입니다.")
         return
@@ -228,7 +166,66 @@ async def main():
             print(f"※ 상세 데이터: {result_filename}")
             print(f"※ 키워드 보고서: {report_path}")
             print(f"※ 태그 보고서: {tag_report_path}")
-            
+
+            # -------------------------------------------------------------
+            # Step 4: AI Copywriting
+            # -------------------------------------------------------------
+            print("\n[Step 4 시작] AI 상품 원고 생성 중...")
+            try:
+                # Prepare data for AI
+                top_10 = report_df.head(10)
+                extracted_keywords = top_10['키워드'].tolist()
+                
+                extracted_tags = []
+                if tag_report_path and os.path.exists(tag_report_path):
+                    tag_df = pd.read_csv(tag_report_path)
+                    extracted_tags = tag_df.head(10)['태그명'].tolist()
+                
+                # Initialize Writer
+                writer = AICopywriter()
+                
+                # Determine what to pass as 'product_name'
+                # If mode 2, we have 'product_title' (my product) and 'keyword' (target keyword)
+                # If mode 1, we just have 'keyword'
+                
+                my_product_name = locals().get('product_title', keyword)
+                #print(f"※ 이미지 갯수: {len(product_image_paths)}")
+                copy_result = writer.generate_copy(
+                    product_name=my_product_name, # My actual product name
+                    keywords=extracted_keywords,
+                    tags=extracted_tags,
+                    image_paths=product_image_paths, # Pass the full list of downloaded images
+                    target_keyword=keyword # The keyword I want to rank for
+                )
+                
+                if copy_result:
+                    print("\n" + "="*40)
+                    print("✨ J-Ops AI 팀장 (6인의 전문가) 제안")
+                    print("="*40)
+                    print(f"🔹 [SEO] 최적화 상품명: {copy_result.get('optimized_title')}")
+                    print(f"🔹 [Keyword] 핵심 키워드: {', '.join(copy_result.get('main_keywords', []))}")
+                    print("-" * 20)
+                    print(f"🔹 [Ogilvy] 헤드라인: {copy_result.get('catch_phrase')}")
+                    print(f"🔹 [Planner] 상세 본문: \n{copy_result.get('detail_body')}")
+                    print("-" * 20)
+                    print(f"🔹 [Marketing] 인스타 캡션: \n{copy_result.get('insta_caption')}")
+                    print(f"🔹 [Algo] 추천 태그: {', '.join(copy_result.get('tags', []))}")
+                    print("="*40)
+                    
+                    # Save AI Result to File
+                    ai_report_base = f"ai_report_{timestamp}.json"
+                    ai_report_filename = config.REPORTS_DIR / ai_report_base
+                    
+                    with open(ai_report_filename, 'w', encoding='utf-8') as f:
+                        json.dump(copy_result, f, ensure_ascii=False, indent=2)
+                    
+                    print(f"※ AI 원고 저장 완료: {ai_report_filename}")
+                else:
+                    print("AI 원고 생성에 실패했습니다 (설정 또는 키 확인 필요).")
+                    
+            except Exception as e:
+                print(f"AI 카피라이터 실행 에러: {e}")
+                
         except Exception as e:
             print(f"결과 출력 중 오류: {e}")
     else:
