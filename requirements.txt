@@ -2,3 +2,4 @@ replicate
 python-dotenv
 requests
 google-generativeai
+moviepy<2.0.0

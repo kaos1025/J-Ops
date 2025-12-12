@@ -13,6 +13,7 @@ from src.writer.ai_copywriter import AICopywriter
 import config
 import json
 from src.scraper.product_fetcher import ProductDataFetcher
+from src.video.reels_maker import ReelsMaker
 
 
 async def main():
@@ -226,6 +227,39 @@ async def main():
             except Exception as e:
                 print(f"AI 카피라이터 실행 에러: {e}")
                 
+            # -------------------------------------------------------------
+            # Step 5: Reels Video Generation
+            # -------------------------------------------------------------
+            print("\n[Step 5 시작] 숏폼 영상(릴스) 생성 중...")
+            try:
+                if product_image_paths:
+                    # AI 결과가 있으면 'catch_phrase', 없으면 키워드 사용
+                    subtitle_text = copy_result.get('catch_phrase') if (copy_result and copy_result.get('catch_phrase')) else keyword
+                    
+                    # 너무 길면 자막이 잘릴 수 있으므로 20자 내외로 자르거나, ReelsMaker가 처리하게 둠.
+                    # ReelsMaker에서 method='caption'을 쓰므로 자동 줄바꿈 됨.
+                    
+                    maker = ReelsMaker()
+                    
+                    # 저장 경로
+                    reels_filename = config.DATA_DIR / "reels" / f"reels_{timestamp}.mp4"
+                    
+                    # 이미지 갯수 제한 (너무 길어지지 않게 상위 8장)
+                    start_imgs = product_image_paths[:8]
+                    
+                    final_video_path = maker.make_reels(start_imgs, subtitle_text, str(reels_filename))
+                    
+                    if final_video_path:
+                        print(f"✨ 릴스 영상 생성 완료: {final_video_path}")
+                    else:
+                        print("영상 생성 실패 (이미지 부족 등)")
+                else:
+                    print("사용 가능한 이미지가 없어 영상을 생성하지 않습니다.")
+                    
+            except Exception as e:
+                print(f"영상 생성 중 오류: {e}")
+                print("Tip: Windows에서 MoviePy 사용 시 ImageMagick 설치가 필요할 수 있습니다.")
+
         except Exception as e:
             print(f"결과 출력 중 오류: {e}")
     else:
